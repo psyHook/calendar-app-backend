@@ -1,4 +1,5 @@
 const { response } = require('express');
+const { validationResult } = require('express-validator');
 
 const createUser = (req, res = response) => {
   // req: lo que el usuario solicita
@@ -8,14 +9,17 @@ const createUser = (req, res = response) => {
 
   const { name, email, password } = req.body;
 
-  if (name.length < 3) {
-    return res.status(400).json({
+  // Manejo de errores
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.json({
       ok: false,
-      msg: 'El nombre debe de ser de 3 letras',
+      errors: errors.mapped(),
     });
   }
 
-  res.json({
+  res.status(201).json({
     ok: true,
     msg: 'registro',
     name,
@@ -25,6 +29,17 @@ const createUser = (req, res = response) => {
 };
 
 const loginUser = (req, res = response) => {
+
+    // Manejo de errores
+    const errors = validationResult(req);
+  
+    if (!errors.isEmpty()) {
+      return res.json({
+        ok: false,
+        errors: errors.mapped(),
+      });
+    }
+    
   const { email, password } = req.body;
 
   res.json({
