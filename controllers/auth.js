@@ -20,10 +20,10 @@ const createUser = async (req, res = response) => {
     }
 
     user = new User(req.body);
-    
+
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
-    user.password = bcrypt.hashSync( password, salt );
+    user.password = bcrypt.hashSync(password, salt);
 
     // Grabacion en la base de datos
     await user.save();
@@ -31,7 +31,7 @@ const createUser = async (req, res = response) => {
     res.status(201).json({
       ok: true,
       uid: user.id,
-      name: user.name
+      name: user.name,
     });
   } catch (error) {
     console.log(error);
@@ -42,17 +42,46 @@ const createUser = async (req, res = response) => {
   }
 };
 
-const loginUser = (req, res = response) => {
+const loginUser = async (req, res = response) => {
+
   const { email, password } = req.body;
 
-  // Manejo de errores ( Custom middleware )
+  try {
+    let user = await User.findOne({ email });
 
-  res.json({
-    ok: true,
-    msg: 'login',
-    email,
-    password,
-  });
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        msg: 'El usuario no existe con ese email.',
+      });
+    }
+
+    // Confirmar los passwords
+    const validatePassword = bcrypt.compareSync(password, user.password);
+    
+    // Validando password
+    if ( !validatePassword ) {
+      return res.status(400).json({
+        ok: false,
+        msg: 'Password incorrecto',
+      });
+    }
+
+    // Generar nuestro JWT
+    res.json({
+      ok: true,
+      uid: user.id,
+      name: user.name,
+    })
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: 'Por favor hable con el Administrador.',
+    });
+  }
+
 };
 
 const revalidateToken = (req, res = response) => {
