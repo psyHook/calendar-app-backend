@@ -25,7 +25,7 @@ router.post('/', createEvent);
 
 // Actualizar evento
 router.put('/:id', updateEvent);
-
+ 
 // Borrar evento
 router.delete('/:id', deleteEvent);
 
